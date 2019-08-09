@@ -35,6 +35,13 @@ class gvars():
     # Base ini
     BaseIni = os.path.join(DATAPATH,'ini/cn.eq.base.ini')
 
+#%% Class of base
+class base_():
+    def __init__(self,fini=None):
+        if fini is not None:
+            self.fini = fini
+            self.ini = Ini(fini)
+
 #%% Class of Instruments
 class Instruments():
     pass

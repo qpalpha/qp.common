@@ -3,7 +3,7 @@
 echo "=============================== qpc Setup ===============================" 
 
 #%% PYTHONPATH
-DEFAULT_PYTHON="/eq/share/lix/3rd/python/pkgs"
+DEFAULT_PYTHON="/qp/lib/site-package"
 read -p "Enter PYTHONPATH: [$DEFAULT_PYTHON]: " pypath
 if [ -z $pypath ]
 then

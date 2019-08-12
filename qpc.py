@@ -295,7 +295,7 @@ def readm2env_from_dictionary(name:str,fini:str=None,fillna=None)->pd.DataFrame:
 #---------------------- Tick Data ----------------------
 def read_tick_data_file(file:str):
     data= pd.read_csv(file,compression='gzip',error_bad_lines=False,index_col=0,\
-        dtype={'trading_date'}).dropna()
+        dtype={'trading_date':int}).dropna()
     data.index = data.index.astype(int)
     return data
 

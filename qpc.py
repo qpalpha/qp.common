@@ -34,6 +34,8 @@ class gvars():
     IdFile = os.path.join(DATAPATH,'tmp/ids.txt')
     # Base ini
     BaseIni = os.path.join(DATAPATH,'ini/cn.eq.base.ini')
+    # Tick data
+    TickDataPath = os.path.join(DATAPATH,'tmp/rq/raw/csv/tick')
 
 #%% Class of base
 class base_():
@@ -289,3 +291,24 @@ def readm2env_from_dictionary(name:str,fini:str=None,fillna=None)->pd.DataFrame:
             data = _merge_(data,data_n)
     if fillna is not None:data.fillna(fillna,inplace=True)
     return data
+
+#---------------------- Tick Data ----------------------
+def read_tick_data_file(file:str):
+    data= pd.read_csv(file,compression='gzip',error_bad_lines=False,index_col=0,\
+        dtype={'trading_date'}).dropna()
+    data.index = data.index.astype(int)
+    return data
+
+def read_tick_data(date:str,ticker:str,fields:list=None):
+    '''
+    fields: 'trading_date', 'open', 'last', 'high', 'low', 'prev_close', 'volume',
+            'total_turnover', 'limit_up', 'limit_down', 'a1', 'a2', 'a3', 'a4',
+            'a5', 'b1', 'b2', 'b3', 'b4', 'b5', 'a1_v', 'a2_v', 'a3_v', 'a4_v',
+            'a5_v', 'b1_v', 'b2_v', 'b3_v', 'b4_v', 'b5_v', 'change_rate'
+    '''
+    tick_file = os.path.join(gvars.TickDataPath,date,ticker+'.tar.gz') 
+    data = read_tick_data_file(tick_file)
+    if fields is not None:
+        data = data[fields]
+    return data
+    

@@ -15,6 +15,7 @@ import datetime as dm
 from qp import *
 import warnings
 warnings.filterwarnings("ignore")
+import pdb
 
 #%% Global Variables
 DATAPATH = '/eq/share/lix/data'
@@ -294,9 +295,10 @@ def readm2env_from_dictionary(name:str,fini:str=None,fillna=None)->pd.DataFrame:
 
 #---------------------- Tick Data ----------------------
 def read_tick_data_file(file:str):
-    data= pd.read_csv(file,compression='gzip',error_bad_lines=False,index_col=0,\
-        dtype={'trading_date':int}).dropna()
+    pdb.set_trace()
+    data= pd.read_csv(file,compression='gzip',error_bad_lines=False,index_col=0).dropna()
     data.index = data.index.astype(int)
+    data['trading_date'] = data['trading_date'].astype(int)
     return data
 
 def read_tick_data(date:str,ticker:str,fields:list=None):
@@ -312,3 +314,6 @@ def read_tick_data(date:str,ticker:str,fields:list=None):
         data = data[fields]
     return data
     
+#%%
+if __name__=='__main__':
+    dd = read_tick_data('20180820','000001')

@@ -36,7 +36,9 @@ class gvars():
     # Base ini
     BaseIni = os.path.join(DATAPATH,'ini/cn.eq.base.ini')
     # Tick data
-    TickDataPath = os.path.join(DATAPATH,'tmp/rq/raw/csv/tick')
+    TickDataPath = os.path.join(DATAPATH,'tmp/rq/raw/tick')
+    # MB1 data
+    MB1DataPath = os.path.join(DATAPATH,'tmp/rq/csv/mb1')
 
 #%% Class of base
 class base_():
@@ -312,7 +314,24 @@ def read_tick_data(date:str,ticker:str,fields:list=None):
     if fields is not None:
         data = data[fields]
     return data
+
+def read_mb1_data_file(file:str):
+    data = pd.read_csv(file,compression='gzip',error_bad_lines=False,dtype={'ticker':str}).dropna()
+    data.rename(columns={file.replace('tar.gz','csv'):'time'},inplace=True)
+    data['time'] = data['time'].astype(int)
+    df = data.set_index(['time','ticker']).unstack()
+    return df
+
+def read_mb1_data(date:str,field:str):
+    '''
+    ap1  ap3  ap5  av2  av4  bp1  bp3  bp5  bv2  bv4  high      ldvwapsum  limitup  lsp   luvolume   mid   sp  volume  vwapsum
+    ap2  ap4  av1  av3  av5  bp2  bp4  bv1  bv3  bv5  ldvolume  limitdown  low      lspp  luvwapsum  open  tp  vwap
+    '''
+    mb1_file = os.path.join(gvars.MB1DataPath,field,date+'.tar.gz') 
+    data = read_mb1_data_file(mb1_file)
+    return data
     
 #%%
 if __name__=='__main__':
-    dd = read_tick_data('20180820','000001')
+    dd = read_mb1_data('20180816','ap1')
+    print(dd)

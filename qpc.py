@@ -320,6 +320,7 @@ def read_mb1_data_file(file:str):
     data.rename(columns={file.replace('tar.gz','csv'):'time'},inplace=True)
     data['time'] = data['time'].astype(int)
     df = data.set_index(['time','ticker']).unstack()
+    df.columns=[t for f,t in df.columns]
     return df
 
 def read_mb1_data(date:str,field:str):
@@ -333,5 +334,5 @@ def read_mb1_data(date:str,field:str):
     
 #%%
 if __name__=='__main__':
-    dd = read_mb1_data('20180816','ap1')
+    dd = read_mb1_data('20190102','ap1')
     print(dd)

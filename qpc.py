@@ -182,6 +182,9 @@ def get_dates(sdate:str=None,edate:str=None,window:int=None,
     if ')' in type: del dates[-1]
     return dates
 
+def today():
+    return dm.datetime.today().strftime('%Y%m%d')
+
 #---------------------- Ids ----------------------
 def generate_ids_file():
     ids = []
@@ -343,4 +346,5 @@ def read_mb1_data(date:str,field:str):
     
 #%%
 if __name__=='__main__':
-    generate_ids_file()
+    print(today())
+    print(date_offset(today(),-20))

@@ -11,6 +11,7 @@ import os,sys,re
 import numpy as np
 import pandas as pd
 import cx_Oracle as ora
+import pymysql
 import datetime as dm
 from qp import *
 import warnings
@@ -39,6 +40,11 @@ class gvars():
     TickDataPath = os.path.join(DATAPATH,'tmp/rq/raw/tick')
     # MB1 data
     MB1DataPath = os.path.join(DATAPATH,'tmp/rq/csv/mb1')
+    # Mysql connection
+    WinddfInfo = {'host':'localhost','db':'WINDDF','user':'readonly',\
+        'passwd':'read123','charset':'utf8'}
+    # Id components
+    IdComponets = ['AShareStocks','AShareIndices']
 
 #%% Class of base
 class base_():
@@ -68,9 +74,11 @@ class AShareStocks(Instruments):
               select S_INFO_CODE from winddf.AShareDescription 
               where S_INFO_LISTDATE is not null
               order by S_INFO_CODE
-              '''
-        conn = ora.connect(gvars.ConnWinddb)
-        return pd.read_sql(sql,conn)['S_INFO_CODE'].tolist()
+              '''.upper()
+        conn = pymysql.connect(**gvars.WinddfInfo)
+        ll = pd.read_sql(sql,conn)['S_INFO_CODE'].tolist()
+        conn.close()
+        return ll
 
 #%% Functions
 def list_index(list_arr:list,index_arr:list)->list:
@@ -126,9 +134,10 @@ def generate_trade_date_file():
            TRADE_DAYS >= {} \
            ORDER BY \
            TRADE_DAYS ASC".format('10000000')
-    conn = ora.connect(gvars.ConnWinddb)
+    conn = pymysql.connect(**gvars.WinddfInfo)
     dts = pd.read_sql(sql,conn)
     dts.to_csv(gvars.TradeDateFile,header = False,index = False)
+    conn.close()
 
 def all_trade_dates()->list:
     try:
@@ -334,5 +343,4 @@ def read_mb1_data(date:str,field:str):
     
 #%%
 if __name__=='__main__':
-    dd = read_mb1_data('20190102','ap1')
-    print(dd)
+    generate_ids_file()

@@ -329,7 +329,7 @@ def read_tick_data(date:str,ticker:str,fields:list=None):
 
 def read_mb1_data_file(file:str):
     data = pd.read_csv(file,compression='gzip',error_bad_lines=False,dtype={'ticker':str}).dropna()
-    data.rename(columns={file.replace('tar.gz','csv'):'time'},inplace=True)
+    data.rename(columns={data.columns[0]:'time'},inplace=True)
     data['time'] = data['time'].astype(int)
     df = data.set_index(['time','ticker']).unstack()
     df.columns=[t for f,t in df.columns]
@@ -346,6 +346,5 @@ def read_mb1_data(date:str,field:str):
     
 #%%
 if __name__=='__main__':
-    z1 = read_tick_data('20180703','000001')
     z2 = read_mb1_data('20190517','lsp')
     pdb.set_trace()

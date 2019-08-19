@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore")
 import pdb
 
 #%% Global Variables
-DATAPATH = '/eq/share/lix/data'
+DATAPATH = '/qp/data'
 
 #%% Class of MemoryMap
 class mmap():
@@ -346,5 +346,6 @@ def read_mb1_data(date:str,field:str):
     
 #%%
 if __name__=='__main__':
-    print(today())
-    print(date_offset(today(),-20))
+    z1 = read_tick_data('20180703','000001')
+    z2 = read_mb1_data('20190517','lsp')
+    pdb.set_trace()

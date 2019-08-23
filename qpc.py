@@ -198,7 +198,7 @@ def generate_ids_file():
         ids += (globals()[cp]().tickers)
     if set(ids)<set(old_ids):
         print(str(set(old_ids) - set(ids)) + "is not in the new ids")
-        ids = list(set(ids)|set(ids_old))
+        ids = list(set(ids)|set(old_ids))
     ids.sort()
     with open(gvars.IdFile, "w", newline="") as f:
         for id in ids:f.write("%s\n" % id)

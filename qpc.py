@@ -45,6 +45,8 @@ class gvars():
         'passwd':'read123','charset':'utf8'}
     # Id components
     IdComponets = ['AShareStocks','AShareIndices']
+    # Extra tickers
+    ExtraTickers = ['000022','601313']
 
 #%% Class of base
 class base_():
@@ -61,11 +63,13 @@ class AShareIndices(Instruments):
     tickers = ['csi300',
                'csi500',
                'sse50',
-               'csi800'] 
+               'csi800', 
+               'csi1000'] 
     tickers_sh = ['000300',
                   '000905',
                   '000016',
-                  '000906']
+                  '000906',
+                  '000852']
 
 class AShareStocks(Instruments):
     @property
@@ -76,9 +80,10 @@ class AShareStocks(Instruments):
               order by S_INFO_CODE
               '''.upper()
         conn = pymysql.connect(**gvars.WinddfInfo)
-        ll = pd.read_sql(sql,conn)['S_INFO_CODE'].tolist()
+        tickers = pd.read_sql(sql,conn)['S_INFO_CODE'].tolist()+gvars.ExtraTickers
         conn.close()
-        return ll
+        tickers.sort()
+        return tickers
 
 #%% Functions
 def list_index(list_arr:list,index_arr:list)->list:
@@ -346,5 +351,4 @@ def read_mb1_data(date:str,field:str):
     
 #%%
 if __name__=='__main__':
-    z2 = read_mb1_data('20190517','lsp')
-    pdb.set_trace()
+    generate_ids_file()

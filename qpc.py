@@ -192,9 +192,13 @@ def today():
 
 #---------------------- Ids ----------------------
 def generate_ids_file():
+    old_ids = all_ids()
     ids = []
     for cp in gvars.IdComponets:
         ids += (globals()[cp]().tickers)
+    if set(ids)<set(old_ids):
+        print(str(set(old_ids) - set(ids)) + "is not in the new ids")
+        ids = list(set(ids)|set(ids_old))
     ids.sort()
     with open(gvars.IdFile, "w", newline="") as f:
         for id in ids:f.write("%s\n" % id)

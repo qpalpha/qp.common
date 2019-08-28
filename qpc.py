@@ -46,7 +46,7 @@ class gvars():
     WinddfInfo = {'host':'localhost','db':'WINDDF','user':'readonly',\
         'passwd':'read123','charset':'utf8'}
     # Id components
-    IdComponets = ['AShareStocks','AShareIndices']
+    IdComponets = ['stock','index']
     # Extra tickers
     ExtraTickers = ['000022','601313']
 
@@ -61,7 +61,7 @@ class base_():
 class Instruments():
     pass
 
-class AShareIndices(Instruments):
+class index(Instruments):
     tickers = ['csi300',
                'csi500',
                'sse50',
@@ -72,8 +72,14 @@ class AShareIndices(Instruments):
                   '000016',
                   '000906',
                   '000852']
+    tickers_rq = ['000300.XSHG',
+                  '000905.XSHG',
+                  '000016.XSHG',
+                  '000906.XSHG',
+                  '000852.XSHG']
+    rq_type = 'INDX'
 
-class AShareStocks(Instruments):
+class stock(Instruments):
     @property
     def tickers(self):
         sql = '''
@@ -86,6 +92,16 @@ class AShareStocks(Instruments):
         conn.close()
         tickers.sort()
         return tickers
+    rq_type = 'CS'
+
+class etf(Instruments):
+    rq_type = 'ETF'
+
+class future(Instruments):
+    rq_type = 'Future'
+
+class option(Instruments):
+    rq_type = 'Option'
 
 #%% Functions
 def list_index(list_arr:list,index_arr:list)->list:
@@ -196,18 +212,35 @@ def today():
 def generate_ids_file():
     old_ids = all_ids()
     ids = []
+    types = []
     for cp in gvars.IdComponets:
-        ids += (globals()[cp]().tickers)
+        tickers = globals()[cp]().tickers 
+        stypes = [cp] * len(tickers)
+        ids += tickers
+        types += stypes
     if set(ids)<set(old_ids):
-        print(str(set(old_ids) - set(ids)) + "is not in the new ids")
+        print(str(set(old_ids) - set(ids)) + "is not in the new ids!")
         ids = list(set(ids)|set(old_ids))
-    ids.sort()
     with open(gvars.IdFile, "w", newline="") as f:
-        for id in ids:f.write("%s\n" % id)
+        for id,type in zip(ids,types):f.write("%s,%s\n" % (id,type))
+
+def all_ids_types()->dict:
+    try:
+        with open(gvars.IdFile,'r') as f:ids = f.read().splitlines()
+        ids_dict = {id.split(',')[0]:id.split(',')[1] for id in ids}
+    except:
+        ids_dict = {}
+    return ids_dict
+
+def all_ids_types_pd(type:'series/df'='series'):
+    ids = pd.Series(all_ids_types(),name='type')
+    if ids=='df': ids = ids.to_frame()
+    return ids
 
 def all_ids()->list:
     try:
         with open(gvars.IdFile,'r') as f:ids = f.read().splitlines()
+        ids = [id.split(',')[0] for id in ids]
     except:
         ids = []
     return ids
@@ -227,20 +260,20 @@ def ids_market(ids:list=None,sh='sh',sz='sz',idx='idx')->list:
     return [d[id[:2]] for id in ids]
 
 def all_ashare_stock_ids()->list:
-    ids_db = AShareStocks().tickers
+    ids_db = stock().tickers
     ids_all = all_ids()
     ids = [id for id in ids_db if id in ids_all]
     return ids
 
 def all_ashare_index_ids()->list:
-    ids_db = AShareIndices().tickers
+    ids_db = index().tickers
     ids_all = all_ids()
     ids = [id for id in ids_db if id in ids_all]
     return ids
 
 def all_ashare_index_ids_sh()->dict:
-    ids_db = AShareIndices().tickers
-    ids_db_sh = AShareIndices().tickers_sh
+    ids_db = index().tickers
+    ids_db_sh = index().tickers_sh
     ids_all = all_ids()
     ids = {id:id_sh for id,id_sh in zip(ids_db,ids_db_sh) if id in ids_all}
     return ids
@@ -327,7 +360,7 @@ def rq_ids_df(type:str='CS')->pd.DataFrame:
     df = pd.read_csv(file,index_col='order_book_id')
     return df
 
-def rq_ids(types:str='CS')->list:
+def rq_ids(type:str='CS')->list:
     df = rq_ids_df(type)
     ids = df.index.tolist()
     ids.sort()
@@ -336,6 +369,15 @@ def rq_ids(types:str='CS')->list:
 def n_rq_ids(type:str='CS')->int:
     df = rq_ids_df(type)
     return len(df)
+
+def rq_types_mapping(types:list=None)->dict:
+    if types is None:
+        # Find all of subclasses of Instruments()
+        types = [instr.__name__ for instr in Instruments.__subclasses__()]
+    return {type:globals()[type]().rq_type for type in types}
+
+def rq2id(rq_id:str,type:str)->str:
+    pass
 
 def read_tick_data_file(file:str):
     data= pd.read_csv(file,compression='gzip',error_bad_lines=False,index_col=0).dropna()
@@ -371,4 +413,5 @@ def read_mb1_data(date:str,field:str):
     
 #%%
 if __name__=='__main__':
-    read_tick_data('20190130','000001')
+    generate_ids_file()
+    #all_ids_types_pd()

@@ -414,7 +414,6 @@ def read_tick_data_file(file:str):
     data = data[data.index.notnull()]
     data.index = data.index.astype(int)
     data['trading_date'] = data['trading_date'].astype(int)
-    pdb.set_trace()
     return data
 
 def read_tick_data(date:str,ticker:str,type:str='CS')->pd.DataFrame:

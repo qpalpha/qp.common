@@ -34,8 +34,10 @@ class gvars():
     TradeDateFile = os.path.join(DATAPATH,'tmp/trade.date.txt')
     # Ids
     IdFile = os.path.join(DATAPATH,'tmp/ids.txt')
+    IdDir = os.path.join(DATAPATH,'tmp/ids/')
     # Dir for rq
     RqDir = os.path.join(DATAPATH,'tmp/rq')
+    RqIdMapFile = os.path.join(IdDir,'rq/stock.map.csv')
     # Base ini
     BaseIni = os.path.join(DATAPATH,'ini/cn.eq.base.ini')
     # Tick data
@@ -48,7 +50,8 @@ class gvars():
     # Id components
     IdComponets = ['stock','index']
     # Extra tickers
-    ExtraTickers = ['000022','601313']
+    #ExtraTickers = ['000022','601313']
+    ExtraTickers = []
 
 #%% Class of base
 class base_():
@@ -62,6 +65,8 @@ class Instruments():
     pass
 
 class index(Instruments):
+    rq_type = 'INDX'
+
     tickers = ['csi300',
                'csi500',
                'sse50',
@@ -72,14 +77,17 @@ class index(Instruments):
                   '000016',
                   '000906',
                   '000852']
-    tickers_rq = ['000300.XSHG',
-                  '000905.XSHG',
-                  '000016.XSHG',
-                  '000906.XSHG',
-                  '000852.XSHG']
-    rq_type = 'INDX'
+
+    def tickers_rq(self,dt):
+        return pd.Series({'csi300'  :'000300.XSHG',
+                          'csi500'  :'000905.XSHG',
+                          'sse50'   :'000016.XSHG',
+                          'csi800'  :'000906.XSHG',
+                          'csi1000' :'000852.XSHG'})
 
 class stock(Instruments):
+    rq_type = 'CS'
+
     @property
     def tickers(self):
         sql = '''
@@ -92,7 +100,24 @@ class stock(Instruments):
         conn.close()
         tickers.sort()
         return tickers
-    rq_type = 'CS'
+
+    def tickers_rq(self,dt):
+        # sh:'XSHG',sz:'XSHE'
+        tkrs_pd = all_ids_types_pd()
+        tkrs = tkrs_pd[tkrs_pd=='stock'].index.tolist()
+        sh,sz = 'XSHG','XSHE'
+        d = {'00':sz,
+             '30':sz,
+             '60':sh,
+             '68':sh,
+             'T0':sh}
+        tkrs = pd.Series({t:t+'.'+d[t[:2]] for t in tkrs})
+        # Read gvars.RqIdMapFile
+        dt = int(dt)
+        mapping = pd.read_csv(gvars.RqIdMapFile,index_col=0)
+        mapping = mapping[(mapping['sdate']<=dt) & (mapping['edate']>=dt)].iloc[:,0]
+        tkrs.update(mapping)
+        return tkrs
 
 class etf(Instruments):
     rq_type = 'ETF'
@@ -234,7 +259,7 @@ def all_ids_types()->dict:
 
 def all_ids_types_pd(type:'series/df'='series'):
     ids = pd.Series(all_ids_types(),name='type')
-    if ids=='df': ids = ids.to_frame()
+    if type=='df': ids = ids.to_frame()
     return ids
 
 def all_ids()->list:
@@ -352,7 +377,14 @@ def readm2env_from_dictionary(name:str,fini:str=None,fillna=None)->pd.DataFrame:
     return data
 
 #---------------------- Rq Tick Data ----------------------
-def rq_ids_df(type:str='CS')->pd.DataFrame:
+def rq2qp_ids(dt:str=None)->pd.Series:
+    if dt is None: dt = today()
+    qp_ids_pd = all_ids_types_pd()
+    types = qp_ids_pd.drop_duplicates()
+    qp_ids = pd.concat([globals()[tp]().tickers_rq(dt) for _,tp in types.items()])
+    return qp_ids
+
+def rq_raw_ids_df(type:str='CS')->pd.DataFrame:
     '''
     type: CS/ETF/INDX/Future/Option
     '''
@@ -360,14 +392,14 @@ def rq_ids_df(type:str='CS')->pd.DataFrame:
     df = pd.read_csv(file,index_col='order_book_id')
     return df
 
-def rq_ids(type:str='CS')->list:
-    df = rq_ids_df(type)
+def rq_raw_ids(type:str='CS')->list:
+    df = rq_raw_ids_df(type)
     ids = df.index.tolist()
     ids.sort()
     return ids
 
-def n_rq_ids(type:str='CS')->int:
-    df = rq_ids_df(type)
+def n_rq_raw_ids(type:str='CS')->int:
+    df = rq_raw_ids_df(type)
     return len(df)
 
 def rq_types_mapping(types:list=None)->dict:
@@ -375,9 +407,6 @@ def rq_types_mapping(types:list=None)->dict:
         # Find all of subclasses of Instruments()
         types = [instr.__name__ for instr in Instruments.__subclasses__()]
     return {type:globals()[type]().rq_type for type in types}
-
-def rq2id(rq_id:str,type:str)->str:
-    pass
 
 def read_tick_data_file(file:str):
     data= pd.read_csv(file,compression='gzip',error_bad_lines=False,index_col=0).dropna()
@@ -413,5 +442,8 @@ def read_mb1_data(date:str,field:str):
     
 #%%
 if __name__=='__main__':
-    generate_ids_file()
-    #all_ids_types_pd()
+    rq2qp_ids()
+    #ss= stock()
+    #print(ss.tickers_rq(20130101))
+    #ii = index()
+    #print(ii.tickers_rq(20130101))

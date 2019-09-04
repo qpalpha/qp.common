@@ -382,6 +382,7 @@ def rq2qp_ids(dt:str=None)->pd.Series:
     qp_ids_pd = all_ids_types_pd()
     types = qp_ids_pd.drop_duplicates()
     qp_ids = pd.concat([globals()[tp]().tickers_rq(dt) for _,tp in types.items()])
+    qp_ids = pd.Series(qp_ids,index=all_ids())
     return qp_ids
 
 def rq_raw_ids_df(type:str='CS')->pd.DataFrame:
@@ -409,9 +410,11 @@ def rq_types_mapping(types:list=None)->dict:
     return {type:globals()[type]().rq_type for type in types}
 
 def read_tick_data_file(file:str):
-    data= pd.read_csv(file,compression='gzip',error_bad_lines=False,index_col=0).dropna()
+    data = pd.read_csv(file,compression='gzip',error_bad_lines=False,index_col=0)
+    data = data[data.index.notnull()]
     data.index = data.index.astype(int)
     data['trading_date'] = data['trading_date'].astype(int)
+    pdb.set_trace()
     return data
 
 def read_tick_data(date:str,ticker:str,type:str='CS')->pd.DataFrame:
@@ -442,7 +445,8 @@ def read_mb1_data(date:str,field:str):
     
 #%%
 if __name__=='__main__':
-    rq2qp_ids()
+    read_tick_data_file('/qp/data/tmp/rq/raw/tick/INDX/20180817/000300.XSHG.tgz')
+    #print(rq2qp_ids())
     #ss= stock()
     #print(ss.tickers_rq(20130101))
     #ii = index()

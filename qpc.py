@@ -43,7 +43,7 @@ class gvars():
     # Tick data
     TickDataPath = os.path.join(DATAPATH,'tmp/rq/raw/tick')
     # MB1 data
-    MB1DataPath = os.path.join(DATAPATH,'tmp/rq/csv/mb1')
+    MB1DataPath = os.path.join(DATAPATH,'tmp/rq/csv/ashare/mb1')
     # Mysql connection
     WinddfInfo = {'host':'localhost','db':'WINDDF','user':'readonly',\
         'passwd':'read123','charset':'utf8'}
@@ -438,7 +438,7 @@ def read_mb1_data(date:str,field:str):
     ap1  ap3  ap5  av2  av4  bp1  bp3  bp5  bv2  bv4  high      ldvwapsum  limitup  lsp   luvolume   mid   sp  volume  vwapsum
     ap2  ap4  av1  av3  av5  bp2  bp4  bv1  bv3  bv5  ldvolume  limitdown  low      lspp  luvwapsum  open  tp  vwap
     '''
-    mb1_file = os.path.join(gvars.MB1DataPath,field,date+'.tar.gz') 
+    mb1_file = os.path.join(gvars.MB1DataPath,field,date+'.tgz') 
     data = read_mb1_data_file(mb1_file)
     return data
     

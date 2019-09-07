@@ -412,8 +412,6 @@ def rq_types_mapping(types:list=None)->dict:
 def read_tick_data_file(file:str):
     data = pd.read_csv(file,compression='gzip',error_bad_lines=False,index_col=0)
     data = data[data.index.notnull()]
-    data.index = data.index.astype(int)
-    data['trading_date'] = data['trading_date'].astype(int)
     return data
 
 def read_tick_data(date:str,ticker:str,type:str='CS')->pd.DataFrame:
@@ -426,8 +424,9 @@ def read_tick_data(date:str,ticker:str,type:str='CS')->pd.DataFrame:
     return data
 
 def read_mb1_data_file(file:str):
-    data = pd.read_csv(file,compression='gzip',error_bad_lines=False,dtype={'ticker':str}).dropna()
+    data = pd.read_csv(file,compression='gzip',error_bad_lines=False,dtype={'ticker':str})
     data.rename(columns={data.columns[0]:'time'},inplace=True)
+    data = data[data['time'].notnull()]
     data['time'] = data['time'].astype(int)
     df = data.set_index(['time','ticker']).unstack()
     df.columns=[t for f,t in df.columns]
@@ -444,7 +443,8 @@ def read_mb1_data(date:str,field:str):
     
 #%%
 if __name__=='__main__':
-    read_tick_data_file('/qp/data/tmp/rq/raw/tick/INDX/20180817/000300.XSHG.tgz')
+    print(read_mb1_data_file('/qp/data/tmp/rq/csv/ashare/mb1/open/20190102.tar.gz').head())
+    #read_tick_data_file('/qp/data/tmp/rq/raw/tick/INDX/20180817/000300.XSHG.tgz')
     #print(rq2qp_ids())
     #ss= stock()
     #print(ss.tickers_rq(20130101))

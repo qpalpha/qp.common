@@ -414,36 +414,15 @@ def read_tick_data_file(file:str):
     data = data[data.index.notnull()]
     return data
 
-def read_tick_data(date:str,ticker:str,type:str='CS')->pd.DataFrame:
-    '''
-    type: CS/ETF/INDX/Future/Option
-    NOT READY YET!!
-    '''
-    tick_file = os.path.join(gvars.TickDataPath,type,date,ticker+'.tgz') 
-    data = read_tick_data_file(tick_file)
-    return data
-
 def read_mb1_data_file(file:str):
-    data = pd.read_csv(file,compression='gzip',error_bad_lines=False,dtype={'ticker':str})
-    data.rename(columns={data.columns[0]:'time'},inplace=True)
-    data = data[data['time'].notnull()]
-    data['time'] = data['time'].astype(int)
-    df = data.set_index(['time','ticker']).unstack()
-    df.columns=[t for f,t in df.columns]
-    return df
-
-def read_mb1_data(date:str,field:str):
-    '''
-    ap1  ap3  ap5  av2  av4  bp1  bp3  bp5  bv2  bv4  high      ldvwapsum  limitup  lsp   luvolume   mid   sp  volume  vwapsum
-    ap2  ap4  av1  av3  av5  bp2  bp4  bv1  bv3  bv5  ldvolume  limitdown  low      lspp  luvwapsum  open  tp  vwap
-    '''
-    mb1_file = os.path.join(gvars.MB1DataPath,field,date+'.tgz') 
-    data = read_mb1_data_file(mb1_file)
+    data = pd.read_csv(file,compression='gzip',error_bad_lines=False,index_col=0)
+    data = data[data.index.notnull()]
+    data.index = data.index.astype(int)
     return data
-    
+
 #%%
 if __name__=='__main__':
-    print(read_mb1_data_file('/qp/data/tmp/rq/csv/ashare/mb1/open/20190102.tar.gz').head())
+    print(read_mb1_data_file('/qp/data/tmp/rq/csv/ashare/mb1/20190102/000001.tgz').head())
     #read_tick_data_file('/qp/data/tmp/rq/raw/tick/INDX/20180817/000300.XSHG.tgz')
     #print(rq2qp_ids())
     #ss= stock()

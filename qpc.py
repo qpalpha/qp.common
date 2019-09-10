@@ -378,7 +378,8 @@ def readm2env_from_dictionary(name:str,fini:str=None,fillna=None)->pd.DataFrame:
 
 def readm2df_3d(name:str)->pd.DataFrame:
     [data,dates,ids,times] = read_binary_array_3d(name)
-    df = pd.DataFrame(np.column_stack(data).T,columns=ids,index=pd.MultiIndex.from_product([dates,times]))
+    df = pd.DataFrame(np.column_stack(data).T,columns=ids,index=pd.MultiIndex.from_product([dates,times],names=['dates','times']))
+    pdb.set_trace()
     return df
 
 #---------------------- Rq Tick Data ----------------------

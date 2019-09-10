@@ -376,6 +376,11 @@ def readm2env_from_dictionary(name:str,fini:str=None,fillna=None)->pd.DataFrame:
     if fillna is not None:data.fillna(fillna,inplace=True)
     return data
 
+def readm2df_3d(name:str)->pd.DataFrame:
+    [data,dates,ids,times] = read_binary_array_3d(name)
+    df = pd.DataFrame(np.column_stack(data).T,columns=ids,index=pd.MultiIndex.from_product([dates,times]))
+    return df
+
 #---------------------- Rq Tick Data ----------------------
 def rq2qp_ids(dt:str=None)->pd.Series:
     if dt is None: dt = today()
@@ -422,7 +427,9 @@ def read_mb1_data_file(file:str):
 
 #%%
 if __name__=='__main__':
-    print(read_mb1_data_file('/qp/data/tmp/rq/csv/ashare/mb1/20190102/000001.tgz').head())
+    #readm2df_3d('/qp/data/tmp/mb/b15/high.b15.bin')
+    readm2df_3d('/qp/data/tmp/mb/b30/high.b30.bin')
+    #print(read_mb1_data_file('/qp/data/tmp/rq/csv/ashare/mb1/20190102/000001.tgz').head())
     #read_tick_data_file('/qp/data/tmp/rq/raw/tick/INDX/20180817/000300.XSHG.tgz')
     #print(rq2qp_ids())
     #ss= stock()

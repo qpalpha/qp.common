@@ -376,10 +376,97 @@ def readm2env_from_dictionary(name:str,fini:str=None,fillna=None)->pd.DataFrame:
     if fillna is not None:data.fillna(fillna,inplace=True)
     return data
 
+# Read 3D-bin
+class DataFrame3D():
+    def __init__(self,values:'np.ndarray/DataFrame3D',index:list=None,columns:list=None,\
+            depths:list=None):
+        if isinstance(values,np.ndarray):
+            self.values = values
+            self.index = index
+            self.columns = columns
+            self.depths = depths
+            self._check_dims_()
+        elif isinstance(values,DataFrame3D):
+            if index is None:
+                index = values.index
+                index_union = index
+            else:
+                index_union = list(set(index).intersection(set(values.index)))
+            if columns is None:
+                columns = values.columns
+                columns_union = columns
+            else:
+                columns_union = list(set(columns).intersection(set(values.columns)))
+            if depths is None:
+                depths = values.depths
+                depths_union = depths
+            else:
+                depths_union = list(set(depths).intersection(set(values.depths)))
+            df3 = DataFrame3D(np.full([len(index),len(columns),len(depths)],np.nan),\
+                    index,columns,depths)
+            df3[index_union,columns_union,depths_union] = values[index_union,columns_union,\
+                    depths_union].values
+            self.values,self.index,self.columns,self.depths = \
+                    df3.values,df3.index,df3.columns,df3.depths
+
+    def _check_dims_(self):
+        ii,cc,dd = self.values.shape
+        II,CC,DD = self.shape
+        if (ii!=II) or (cc!=CC) or (dd!=DD):
+            raise ValueError('Shape of passed values is ({}, {}, {}), indices imply ({}, {}, {})'.format(ii,cc,dd,II,CC,DD))
+
+    def __str__(self):
+        string = 'Dimensions:   {} (index) x {} (columns) x {} (depths)\nIndex axis:   {} to {}\nColumns axis: {} to {}\nDepths axis:  {} to {}'.format(\
+                len(self.index),len(self.columns),len(self.depths),\
+                self.index[0],self.index[-1],
+                self.columns[0],self.columns[-1],
+                self.depths[0],self.depths[-1])
+        return string
+
+    def head(self,n=5):
+        df = self.to_2D()
+        return df.head(n)
+
+    def tail(self,n=5):
+        df = self.to_2D()
+        return df.tail(n)
+
+    def to_2D(self):
+        df = pd.DataFrame(np.row_stack(self.values),columns=self.depths,index=\
+                pd.MultiIndex.from_product([self.index,self.columns]))
+        return df
+
+    @property
+    def shape(self):
+        return len(self.index),len(self.columns),len(self.depths)
+
+    def __getitem__(self,slices):
+        si,sc,sd = [self._parse_slice_(sl,ll) for sl,ll in \
+                zip(slices,[self.index,self.columns,self.depths])]
+        values = self.values[si,:,:][:,sc,:][:,:,sd]
+        index = list_index(self.index,si)
+        columns = list_index(self.columns,sc)
+        depths = list_index(self.depths,sd)
+        return DataFrame3D(values,index,columns,depths)
+
+    def __setitem__(self,slices,arr3d:np.array):
+        si,sc,sd = [self._parse_slice_(sl,ll) for sl,ll in \
+                zip(slices,[self.index,self.columns,self.depths])]
+        self.values[si[:,np.newaxis,np.newaxis],sc[np.newaxis,:,np.newaxis],\
+                sd[np.newaxis,np.newaxis,:]] = arr3d
+
+    def _parse_slice_(self,sl,ll):
+        if isinstance(sl,slice):
+            idx = np.array([*range(len(ll))][sl])
+        elif isinstance(sl,list):
+            idx = index_lshort_in_llong(sl,ll)
+        elif isinstance(sl,str):
+            idx = np.array([ll.index(sl)])
+        return idx
+
 def readm2df_3d(name:str)->pd.DataFrame:
     [data,dates,ids,times] = read_binary_array_3d(name)
-    df = pd.DataFrame(np.column_stack(data).T,columns=ids,index=pd.MultiIndex.from_product([dates,times],names=['dates','times']))
-    pdb.set_trace()
+    df = DataFrame3D(data,dates,ids,times)
     return df
 
 #---------------------- Rq Tick Data ----------------------
@@ -428,8 +515,26 @@ def read_mb1_data_file(file:str):
 
 #%%
 if __name__=='__main__':
+    # Usage for DataFrame3D
+    values = np.random.randn(2,3,4)
+    index = [str(n) for n in range(2)]
+    columns = [str(n) for n in range(3)]
+    depths = [str(n) for n in range(4)]
+    df3 = DataFrame3D(values,index,columns,depths)
+    print(df3.head())
+    print(df3[:,'1',['0','2']])
+    print(df3.values)
+    df3[['0'],:,:2] = np.ones([1,3,2])
+    print(df3.values)
+    new_index = ['1','2','4'] 
+    new_df3 = DataFrame3D(df3,index=new_index)
+    print(new_df3)
+    print(new_df3.head())
+
     #readm2df_3d('/qp/data/tmp/mb/b15/high.b15.bin')
-    readm2df_3d('/qp/data/tmp/mb/b30/high.b30.bin')
+    z = readm2df_3d('/qp/data/tmp/mb/b30/high.b30.bin')
+    print(z)
+    print(z.head(30))
     #print(read_mb1_data_file('/qp/data/tmp/rq/csv/ashare/mb1/20190102/000001.tgz').head())
     #read_tick_data_file('/qp/data/tmp/rq/raw/tick/INDX/20180817/000300.XSHG.tgz')
     #print(rq2qp_ids())

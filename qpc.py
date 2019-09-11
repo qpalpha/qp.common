@@ -441,13 +441,8 @@ class DataFrame3D():
                 pd.MultiIndex.from_product([self.index,self.columns]))
         return df
 
-    def fillna(self,value=0,inplace=False):
-        if inplace:
-            self.values[np.isnan(self.values)] = value
-        else:
-            df = DataFrame3D(self.values,self.index,self.columns,self.depths)
-            df.values[np.isnan(df.values)] = value
-            return df
+    def fillna(self,value=0):
+        self.values[np.isnan(self.values)] = value
 
     @property
     def shape(self):

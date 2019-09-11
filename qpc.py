@@ -378,14 +378,20 @@ def readm2env_from_dictionary(name:str,fini:str=None,fillna=None)->pd.DataFrame:
 
 # Read 3D-bin
 class DataFrame3D():
-    def __init__(self,values:'np.ndarray/DataFrame3D',index:list=None,columns:list=None,\
-            depths:list=None):
+    def __init__(self,values:'float/int/np.ndarray/DataFrame3D'=np.nan,index:list=None,\
+            columns:list=None,depths:list=None):
+        pdb.set_trace()
         if isinstance(values,np.ndarray):
             self.values = values
             self.index = index
             self.columns = columns
             self.depths = depths
             self._check_dims_()
+        elif isinstance(values,float) or isinstance(values,int):
+            self.index = index
+            self.columns = columns
+            self.depths = depths
+            self.values = np.full(len(index),len(columns),len(depths)],values)
         elif isinstance(values,DataFrame3D):
             if index is None:
                 index = values.index
@@ -520,6 +526,7 @@ if __name__=='__main__':
     index = [str(n) for n in range(2)]
     columns = [str(n) for n in range(3)]
     depths = [str(n) for n in range(4)]
+    df3 = DataFrame3D(1,index,columns,depths)
     df3 = DataFrame3D(values,index,columns,depths)
     print(df3.head())
     print(df3[:,'1',['0','2']])
@@ -527,14 +534,15 @@ if __name__=='__main__':
     df3[['0'],:,:2] = np.ones([1,3,2])
     print(df3.values)
     new_index = ['1','2','4'] 
-    new_df3 = DataFrame3D(df3,index=new_index)
+    new_columns = ['1','2','4'] 
+    new_df3 = DataFrame3D(df3,index=new_index,columns=new_columns)
     print(new_df3)
     print(new_df3.head())
 
     #readm2df_3d('/qp/data/tmp/mb/b15/high.b15.bin')
-    z = readm2df_3d('/qp/data/tmp/mb/b30/high.b30.bin')
-    print(z)
-    print(z.head(30))
+    #z = readm2df_3d('/qp/data/tmp/mb/b30/high.b30.bin')
+    #print(z)
+    #print(z.head(30))
     #print(read_mb1_data_file('/qp/data/tmp/rq/csv/ashare/mb1/20190102/000001.tgz').head())
     #read_tick_data_file('/qp/data/tmp/rq/raw/tick/INDX/20180817/000300.XSHG.tgz')
     #print(rq2qp_ids())

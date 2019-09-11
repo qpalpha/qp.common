@@ -441,6 +441,14 @@ class DataFrame3D():
                 pd.MultiIndex.from_product([self.index,self.columns]))
         return df
 
+    def fillna(self,value=0,inplace=False):
+        if inplace:
+            self.values[np.isnan(self.values)] = value
+        else:
+            df = DataFrame3D(self.values,self.index,self.columns,self.depths)
+            df.values[np.isnan(df.values)] = value
+            return df
+
     @property
     def shape(self):
         return len(self.index),len(self.columns),len(self.depths)
@@ -530,6 +538,8 @@ if __name__=='__main__':
     print(df3.head())
     df3 = DataFrame3D(index=index,columns=columns,depths=depths)
     print(df3)
+    print(df3.head())
+    df3.fillna(0)
     print(df3.head())
     #df3 = DataFrame3D(values,index,columns,depths)
     #print(df3.head())

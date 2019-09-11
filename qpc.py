@@ -428,6 +428,8 @@ class DataFrame3D():
                 self.depths[0],self.depths[-1])
         return string
 
+    __repr__ = __str__
+
     def head(self,n=5):
         df = self.to_2D()
         return df.head(n)

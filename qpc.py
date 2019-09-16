@@ -467,6 +467,9 @@ class DataFrame3D():
 
     def _parse_slice_(self,sl,ll):
         if isinstance(sl,slice):
+            start = sl.start if (sl.start is None) or (isinstance(sl.start,int)) else ll.index(sl.start)
+            stop = sl.stop if (sl.stop is None) or (isinstance(sl.stop,int)) else ll.index(sl.stop)
+            sl = slice(start,stop,sl.step)
             idx = np.array([*range(len(ll))][sl])
         elif isinstance(sl,list):
             idx = index_lshort_in_llong(sl,ll)
@@ -526,18 +529,23 @@ def read_mb1_data_file(file:str):
 #%%
 if __name__=='__main__':
     # Usage for DataFrame3D
-    values = np.random.randn(2,3,4)
-    index = [str(n) for n in range(2)]
+    values = np.random.randn(4,3,4)
+    index = [str(n) for n in range(4)]
     columns = [str(n) for n in range(3)]
     depths = [str(n) for n in range(4)]
     df3 = DataFrame3D(1,index,columns,depths)
-    print(df3)
-    print(df3.head())
-    df3 = DataFrame3D(index=index,columns=columns,depths=depths)
-    print(df3)
-    print(df3.head())
-    df3.fillna(0)
-    print(df3.head())
+    #print(df3[:'1','1',['0','2']].to_2D())
+    #print(df3[:1,'1',['0','2']].to_2D())
+    print(df3[:,'1',['0','2']].to_2D())
+    print(df3[::2,'1',['0','2']].to_2D())
+    print(df3[1:3,'1',['0','2']].to_2D())
+    #print(df3)
+    #print(df3.head())
+    #df3 = DataFrame3D(index=index,columns=columns,depths=depths)
+    #print(df3)
+    #print(df3.head())
+    #df3.fillna(0)
+    #print(df3.head())
     #df3 = DataFrame3D(values,index,columns,depths)
     #print(df3.head())
     #print(df3[:,'1',['0','2']])

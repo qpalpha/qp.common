@@ -233,6 +233,9 @@ def get_dates(sdate:str=None,edate:str=None,window:int=None,
 def today():
     return dm.datetime.today().strftime('%Y%m%d')
 
+def yesterday():
+    return date_offset(today())
+
 #---------------------- Ids ----------------------
 def generate_ids_file():
     old_ids = all_ids()
@@ -528,17 +531,18 @@ def read_mb1_data_file(file:str):
 
 #%%
 if __name__=='__main__':
+    print(yesterday())
     # Usage for DataFrame3D
-    values = np.random.randn(4,3,4)
-    index = [str(n) for n in range(4)]
-    columns = [str(n) for n in range(3)]
-    depths = [str(n) for n in range(4)]
-    df3 = DataFrame3D(1,index,columns,depths)
-    #print(df3[:'1','1',['0','2']].to_2D())
-    #print(df3[:1,'1',['0','2']].to_2D())
-    print(df3[:,'1',['0','2']].to_2D())
-    print(df3[::2,'1',['0','2']].to_2D())
-    print(df3[1:3,'1',['0','2']].to_2D())
+    #values = np.random.randn(4,3,4)
+    #index = [str(n) for n in range(4)]
+    #columns = [str(n) for n in range(3)]
+    #depths = [str(n) for n in range(4)]
+    #df3 = DataFrame3D(1,index,columns,depths)
+    ##print(df3[:'1','1',['0','2']].to_2D())
+    ##print(df3[:1,'1',['0','2']].to_2D())
+    #print(df3[:,'1',['0','2']].to_2D())
+    #print(df3[::2,'1',['0','2']].to_2D())
+    #print(df3[1:3,'1',['0','2']].to_2D())
     #print(df3)
     #print(df3.head())
     #df3 = DataFrame3D(index=index,columns=columns,depths=depths)

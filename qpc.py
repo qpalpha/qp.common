@@ -213,6 +213,12 @@ def date_offset(date:str,offset:int=-1)->str:
         return str(dt)
     except: return ''
 
+def count_dates(sdate:str,edate:str)->int:
+    dates = datestr2num(all_trade_dates())
+    sindex = np.where(dates>=int(sdate))[0][0]
+    eindex = np.where(dates>=int(edate))[0][0]
+    return eindex-sindex
+
 def get_dates(sdate:str=None,edate:str=None,window:int=None,
               dates:list=None,type:str='[]'):
     if dates is None:
@@ -531,6 +537,7 @@ def read_mb1_data_file(file:str):
 
 #%%
 if __name__=='__main__':
+    count_dates(yesterday(),today())
     print(yesterday())
     # Usage for DataFrame3D
     #values = np.random.randn(4,3,4)

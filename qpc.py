@@ -342,7 +342,7 @@ def mreadm2env(file:str):
         else:
             df = pd.DataFrame(index=global_trade_dates(),columns=all_ids())
         mmap.e[file] = df
-    return df
+    return df.copy()
 
 def _merge_(df1,df2):
     # dates

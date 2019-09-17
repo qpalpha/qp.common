@@ -325,7 +325,7 @@ def mreadm2df(file:str):
         else:
             bn = pd.DataFrame()
         mmap.o[file] = bn
-    return bn
+    return bn.copy()
 
 def mreadm2env(file:str):
     '''
